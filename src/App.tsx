@@ -181,39 +181,61 @@ export default function App() {
         const isCurrent = i === activeIndex;
         const isHovered = i === hoveredIndex;
 
-        let isHighlighted = false;
-        if (mode === 'trail') {
-          isHighlighted = i <= activeIndex;
-        } else {
-          isHighlighted = i === activeIndex;
-        }
-
         ctx.beginPath();
 
-        if (isCurrent) {
-          // Active green dot fades in from grey-tan (#D1D1CB) to custom green (#21FBAC)
-          // same size as standard dots (dotRadius), with absolutely no glow
-          const r = Math.round(209 + (33 - 209) * progress);
-          const g = Math.round(209 + (251 - 209) * progress);
-          const b = Math.round(203 + (172 - 203) * progress);
+        if (isHovered) {
+          // Under mouse cursor for interactive coordinate inspection
+          ctx.arc(x, y, dotRadius * 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#2D2D2A';
+          ctx.fill();
+        } else if (isCurrent) {
+          // Active green dot fades in from the future dot color (#D6D6CE) to custom green (#21FBAC)
+          // at the exact same size as other standard dots (dotRadius), with absolutely no glow
+          const r = Math.round(214 + (33 - 214) * progress);
+          const g = Math.round(214 + (251 - 214) * progress);
+          const b = Math.round(206 + (172 - 206) * progress);
 
           ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
           ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
           ctx.fill();
-        } else if (isHighlighted) {
-          // Part of the active highlighted trail: vibrant green at same size as standard dots, no glow
-          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-          ctx.fillStyle = '#21FBAC';
-          ctx.fill();
-        } else if (isHovered) {
-          // Under mouse cursor
-          ctx.arc(x, y, dotRadius * 1.5, 0, Math.PI * 2);
-          ctx.fillStyle = '#2D2D2A';
-          ctx.fill();
+        } else if (i < activeIndex) {
+          // Part of the progressive trail or fading out
+          const distFromActive = (activeIndex - i) - progress;
+
+          if (distFromActive < 5.5) {
+            // Smoothly fade out the green color over 5-6 dots
+            const f = Math.min(1, Math.max(0, distFromActive / 5.5));
+            if (mode === 'trail') {
+              // Fade from green (#21FBAC) to the trail color (#9E9E94)
+              const r = Math.round(33 + (158 - 33) * f);
+              const g = Math.round(251 + (158 - 251) * f);
+              const b = Math.round(172 + (148 - 172) * f);
+              ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+              ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+              ctx.fill();
+            } else {
+              // In scan mode, fade from green (#21FBAC) back to standard background (#D6D6CE)
+              const r = Math.round(33 + (214 - 33) * f);
+              const g = Math.round(251 + (214 - 251) * f);
+              const b = Math.round(172 + (206 - 172) * f);
+              ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+              ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+              ctx.fill();
+            }
+          } else {
+            // Fully completed/faded out
+            ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+            if (mode === 'trail') {
+              ctx.fillStyle = '#9E9E94'; // solid elegant medium-grey for trail
+            } else {
+              ctx.fillStyle = '#D6D6CE'; // standard background dot
+            }
+            ctx.fill();
+          }
         } else {
-          // Standard background dots: muted grey-tan (#D1D1CB)
+          // Future/Unfilled dots: soft muted grey-tan (#D6D6CE) blending into the warm beige background
           ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-          ctx.fillStyle = '#D1D1CB';
+          ctx.fillStyle = '#D6D6CE';
           ctx.fill();
         }
       }
