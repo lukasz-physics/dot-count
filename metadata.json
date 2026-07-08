@@ -1,0 +1,6 @@
+{
+  "name": "9131 Sequential Dot Grid",
+  "description": "A beautiful sequential index visualization grid featuring 9,131 dots 200 wide with custom highlight controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
